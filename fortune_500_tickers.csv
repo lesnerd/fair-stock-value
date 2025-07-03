@@ -1,0 +1,51 @@
+ticker,company_name,sector
+AAPL,Apple Inc.,Technology
+MSFT,Microsoft Corporation,Technology
+GOOGL,Alphabet Inc.,Communication Services
+AMZN,Amazon.com Inc.,Consumer Cyclical
+NVDA,NVIDIA Corporation,Technology
+META,Meta Platforms Inc.,Communication Services
+TSLA,Tesla Inc.,Consumer Cyclical
+BRK-B,Berkshire Hathaway Inc.,Financial Services
+UNH,UnitedHealth Group Inc.,Healthcare
+JNJ,Johnson & Johnson,Healthcare
+JPM,JPMorgan Chase & Co.,Financial Services
+V,Visa Inc.,Financial Services
+PG,Procter & Gamble Co.,Consumer Defensive
+HD,Home Depot Inc.,Consumer Cyclical
+MA,Mastercard Inc.,Financial Services
+BAC,Bank of America Corp.,Financial Services
+ABBV,AbbVie Inc.,Healthcare
+PFE,Pfizer Inc.,Healthcare
+KO,Coca-Cola Co.,Consumer Defensive
+AVGO,Broadcom Inc.,Technology
+PEP,PepsiCo Inc.,Consumer Defensive
+TMO,Thermo Fisher Scientific Inc.,Healthcare
+COST,Costco Wholesale Corp.,Consumer Defensive
+WMT,Walmart Inc.,Consumer Defensive
+MRK,Merck & Co. Inc.,Healthcare
+DIS,Walt Disney Co.,Communication Services
+ACN,Accenture Plc,Technology
+VZ,Verizon Communications Inc.,Communication Services
+ADBE,Adobe Inc.,Technology
+NFLX,Netflix Inc.,Communication Services
+NKE,Nike Inc.,Consumer Cyclical
+CRM,Salesforce Inc.,Technology
+DHR,Danaher Corp.,Healthcare
+LIN,Linde Plc,Materials
+TXN,Texas Instruments Inc.,Technology
+NEE,NextEra Energy Inc.,Utilities
+ABT,Abbott Laboratories,Healthcare
+ORCL,Oracle Corp.,Technology
+PM,Philip Morris International Inc.,Consumer Defensive
+RTX,Raytheon Technologies Corp.,Industrials
+QCOM,Qualcomm Inc.,Technology
+HON,Honeywell International Inc.,Industrials
+WFC,Wells Fargo & Co.,Financial Services
+UPS,United Parcel Service Inc.,Industrials
+T,AT&T Inc.,Communication Services
+LOW,Lowe's Companies Inc.,Consumer Cyclical
+SPGI,S&P Global Inc.,Financial Services
+ELV,Elevance Health Inc.,Healthcare
+SCHW,Charles Schwab Corp.,Financial Services
+CAT,Caterpillar Inc.,Industrials
