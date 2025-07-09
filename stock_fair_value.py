@@ -865,12 +865,16 @@ class StockValuator:
             # Determine status
             status = self.determine_status(fair_value, stock_data['current_price'])
             
+            # Calculate the difference for sorting purposes
+            price_difference = fair_value - stock_data['current_price']
+            
             results.append({
                 'Ticker': ticker,
                 'Fair Value': f"${fair_value:.2f}",
                 'Current Price': f"${stock_data['current_price']:.2f}",
                 'Book Value': f"${stock_data['book_value']:.2f}",
-                'Status': status
+                'Status': status,
+                'Price_Difference': price_difference
             })
         
         # Display results
@@ -893,8 +897,25 @@ class StockValuator:
         print(f"Stock Fair Value Analysis - {current_time.strftime('%Y-%m-%d %H:%M:%S ET')}")
         print("="*80)
         
+        # Sort results: Underpriced first (by highest upside), then Overpriced (by ticker)
+        def sort_key(x):
+            if x['Status'] == 'Underpriced':
+                # For underpriced stocks, sort by price difference (highest first)
+                return (0, -x['Price_Difference'])  # 0 ensures underpriced come first, negative for descending order
+            else:
+                # For overpriced stocks, sort by ticker alphabetically
+                return (1, x['Ticker'])  # 1 ensures overpriced come after underpriced
+        
+        sorted_results = sorted(results, key=sort_key)
+        
+        # Remove the Price_Difference field from display (keep it internal for sorting)
+        display_results = []
+        for result in sorted_results:
+            display_result = {k: v for k, v in result.items() if k != 'Price_Difference'}
+            display_results.append(display_result)
+        
         # Create table
-        table = tabulate(results, headers="keys", tablefmt="grid", floatfmt=".2f")
+        table = tabulate(display_results, headers="keys", tablefmt="grid", floatfmt=".2f")
         print(table)
         
         # Summary statistics
