@@ -872,9 +872,10 @@ class StockValuator:
                 'Ticker': ticker,
                 'Fair Value': f"${fair_value:.2f}",
                 'Current Price': f"${stock_data['current_price']:.2f}",
+                'Price Difference': f"${price_difference:.2f}",
                 'Book Value': f"${stock_data['book_value']:.2f}",
                 'Status': status,
-                'Price_Difference': price_difference
+                'Price_Difference_Raw': price_difference
             })
         
         # Display results
@@ -884,11 +885,17 @@ class StockValuator:
     
     def display_results(self, results):
         """
-        Display valuation results in a formatted table
+        Display valuation results in a formatted table with color coding
         
         Args:
             results (list): List of valuation results
         """
+        # ANSI color codes
+        GREEN = '\033[92m'  # Green for underpriced
+        RED = '\033[91m'    # Red for overpriced
+        RESET = '\033[0m'   # Reset to default color
+        BOLD = '\033[1m'    # Bold text
+        
         # Get current time in Eastern Time
         et_tz = pytz.timezone('US/Eastern')
         current_time = datetime.now(et_tz)
@@ -901,17 +908,30 @@ class StockValuator:
         def sort_key(x):
             if x['Status'] == 'Underpriced':
                 # For underpriced stocks, sort by price difference (highest first)
-                return (0, -x['Price_Difference'])  # 0 ensures underpriced come first, negative for descending order
+                return (0, -x['Price_Difference_Raw'])  # 0 ensures underpriced come first, negative for descending order
             else:
                 # For overpriced stocks, sort by ticker alphabetically
                 return (1, x['Ticker'])  # 1 ensures overpriced come after underpriced
         
         sorted_results = sorted(results, key=sort_key)
         
-        # Remove the Price_Difference field from display (keep it internal for sorting)
+        # Apply color coding and remove Price_Difference_Raw field from display
         display_results = []
         for result in sorted_results:
-            display_result = {k: v for k, v in result.items() if k != 'Price_Difference'}
+            # Choose color based on status
+            color = GREEN if result['Status'] == 'Underpriced' else RED
+            
+            # Apply color to each field in the row
+            display_result = {}
+            for k, v in result.items():
+                if k != 'Price_Difference_Raw':  # Exclude internal sorting field
+                    if k == 'Status':
+                        # Make status bold and colored
+                        display_result[k] = f"{color}{BOLD}{v}{RESET}"
+                    else:
+                        # Apply color to other fields
+                        display_result[k] = f"{color}{v}{RESET}"
+            
             display_results.append(display_result)
         
         # Create table
