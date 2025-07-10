@@ -37,6 +37,8 @@ import json
 import statistics
 from typing import List, Optional
 import logging
+from concurrent.futures import ThreadPoolExecutor, as_completed
+import threading
 
 # Configure yfinance to use HTTP instead of HTTPS to avoid SSL issues
 try:
@@ -489,12 +491,12 @@ class StockValuator:
         
         print(f"Fetching P/E ratios for {ticker} from multiple sources...")
         
-        # Fetch from all available sources
+        # Fetch from all available sources (skip slow APIs for now)
         pe_sources = [
             self.fetch_pe_from_yfinance,
-            self.fetch_pe_from_alpha_vantage,
-            self.fetch_pe_from_fmp,
             self.fetch_pe_from_local_data,    # Always try fallback data as backup
+            # self.fetch_pe_from_alpha_vantage,  # Commented out - causes hanging
+            # self.fetch_pe_from_fmp,           # Commented out - causes hanging
             # self.fetch_pe_from_yahoo_scrape,  # Commented out to avoid too many requests
             # self.fetch_pe_from_finviz,        # Commented out to avoid too many requests
         ]
@@ -844,17 +846,20 @@ class StockValuator:
         """
         return 'Underpriced' if current_price < fair_value else 'Overpriced'
     
-    def run_valuation(self):
+    def process_stock(self, ticker, index, total):
         """
-        Run valuation for all Fortune 500 stocks and display results
+        Process a single stock's data and valuation
+        
+        Args:
+            ticker (str): Stock ticker symbol
+            index (int): Current index for progress tracking
+            total (int): Total number of stocks
+            
+        Returns:
+            dict: Processed stock result
         """
-        print("Starting stock valuation analysis...")
-        print("Fetching data for Fortune 500 stocks...")
-        
-        results = []
-        
-        for i, ticker in enumerate(self.fortune_500_tickers):
-            print(f"Processing {ticker} ({i+1}/{len(self.fortune_500_tickers)})")
+        try:
+            print(f"Processing {ticker} ({index+1}/{total})")
             
             # Fetch stock data
             stock_data = self.fetch_stock_data(ticker)
@@ -868,7 +873,7 @@ class StockValuator:
             # Calculate the difference for sorting purposes
             price_difference = fair_value - stock_data['current_price']
             
-            results.append({
+            result = {
                 'Ticker': ticker,
                 'Fair Value': f"${fair_value:.2f}",
                 'Current Price': f"${stock_data['current_price']:.2f}",
@@ -876,10 +881,90 @@ class StockValuator:
                 'Book Value': f"${stock_data['book_value']:.2f}",
                 'Status': status,
                 'Price_Difference_Raw': price_difference
-            })
+            }
+            
+            print(f"Completed processing {ticker}")
+            return result
+            
+        except Exception as e:
+            print(f"Error in process_stock for {ticker}: {str(e)}")
+            # Return a fallback result
+            return {
+                'Ticker': ticker,
+                'Fair Value': "$0.00",
+                'Current Price': "$0.00",
+                'Price Difference': "$0.00",
+                'Book Value': "$0.00",
+                'Status': 'Error',
+                'Price_Difference_Raw': 0
+            }
+    
+    def run_valuation(self, max_workers=8):
+        """
+        Run valuation for all Fortune 500 stocks and display results with parallel processing
+        
+        Args:
+            max_workers (int): Maximum number of parallel workers for data fetching
+        """
+        print("Starting stock valuation analysis...")
+        print(f"Fetching data for {len(self.fortune_500_tickers)} stocks using {max_workers} parallel workers...")
+        
+        results = []
+        completed_count = 0
+        lock = threading.Lock()
+        
+        def update_progress():
+            nonlocal completed_count
+            with lock:
+                completed_count += 1
+                print(f"Completed: {completed_count}/{len(self.fortune_500_tickers)} stocks")
+        
+        # Use ThreadPoolExecutor for parallel processing
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            # Submit all tasks
+            future_to_ticker = {}
+            for i, ticker in enumerate(self.fortune_500_tickers):
+                future = executor.submit(self.process_stock, ticker, i, len(self.fortune_500_tickers))
+                future_to_ticker[future] = ticker
+            
+            print(f"Submitted {len(future_to_ticker)} tasks to executor")
+            
+            # Collect results as they complete with timeout
+            for future in as_completed(future_to_ticker, timeout=300):  # 5 minute timeout per batch
+                ticker = future_to_ticker[future]
+                try:
+                    result = future.result(timeout=60)  # 1 minute timeout per stock
+                    results.append(result)
+                    update_progress()
+                except Exception as e:
+                    print(f"Error processing {ticker}: {str(e)}")
+                    # Add a fallback result for failed stocks
+                    results.append({
+                        'Ticker': ticker,
+                        'Fair Value': "$0.00",
+                        'Current Price': "$0.00",
+                        'Price Difference': "$0.00",
+                        'Book Value': "$0.00",
+                        'Status': 'Error',
+                        'Price_Difference_Raw': 0
+                    })
+                    update_progress()
+        
+        print(f"\nData fetching completed. Collected {len(results)} results. Preparing results...")
+        
+        # Ensure we have results before displaying
+        if not results:
+            print("No results to display!")
+            return []
         
         # Display results
-        self.display_results(results)
+        try:
+            self.display_results(results)
+        except Exception as e:
+            print(f"Error displaying results: {str(e)}")
+            # Simple fallback display
+            for result in results:
+                print(f"{result['Ticker']}: {result['Status']}")
         
         return results
     
@@ -989,7 +1074,7 @@ def main():
         valuator = StockValuator()
         valuator.fortune_500_tickers = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 
                                        'META', 'TSLA', 'BRK-B', 'UNH', 'JNJ']
-        valuator.run_valuation()
+        valuator.run_valuation(max_workers=4)  # Use fewer workers for test
     
     else:
         # Run once immediately
