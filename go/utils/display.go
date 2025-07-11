@@ -99,7 +99,7 @@ func sortResults(results []*models.ValuationResult, sortBy string) {
 func displayHeader(showColors bool) {
 	currentTime := time.Now()
 	
-	separator := strings.Repeat("=", 80)
+	separator := strings.Repeat("=", 90)
 	title := fmt.Sprintf("Stock Fair Value Analysis - %s", currentTime.Format("2006-01-02 15:04:05"))
 	
 	if showColors {
@@ -117,15 +117,15 @@ func displayHeader(showColors bool) {
 func displayTable(results []*models.ValuationResult, showColors bool) {
 	// Table header
 	if showColors {
-		fmt.Printf("%s%-8s %-12s %-12s %-12s %-12s %-12s%s\n", 
-			ColorBold, "Ticker", "Fair Value", "Current Price", "Difference", "Book Value", "Status", ColorReset)
+		fmt.Printf("%s%-8s %-12s %-12s %-12s %-10s %-12s %-12s%s\n", 
+			ColorBold, "Ticker", "Fair Value", "Current Price", "Difference", "Percentage", "Book Value", "Status", ColorReset)
 	} else {
-		fmt.Printf("%-8s %-12s %-12s %-12s %-12s %-12s\n", 
-			"Ticker", "Fair Value", "Current Price", "Difference", "Book Value", "Status")
+		fmt.Printf("%-8s %-12s %-12s %-12s %-10s %-12s %-12s\n", 
+			"Ticker", "Fair Value", "Current Price", "Difference", "Percentage", "Book Value", "Status")
 	}
 	
 	// Separator line
-	fmt.Println(strings.Repeat("-", 80))
+	fmt.Println(strings.Repeat("-", 90))
 	
 	// Table rows
 	for _, result := range results {
@@ -144,12 +144,13 @@ func displayRow(result *models.ValuationResult, showColors bool) {
 		}
 	}
 	
-	fmt.Printf("%s%-8s $%-11.2f $%-11.2f $%-11.2f $%-11.2f %-12s%s\n",
+	fmt.Printf("%s%-8s $%-11.2f $%-11.2f $%-11.2f %-9.1f%% $%-11.2f %-12s%s\n",
 		color,
 		result.Ticker,
 		result.FairValue,
 		result.CurrentPrice,
 		result.PriceDifference,
+		result.UpsidePercentage,
 		result.BookValue,
 		result.Status,
 		ColorReset)
@@ -175,7 +176,7 @@ func displaySummary(results []*models.ValuationResult, showColors bool) {
 		avgUpside = totalUpside / float64(underpriced)
 	}
 	
-	separator := strings.Repeat("=", 80)
+	separator := strings.Repeat("=", 90)
 	
 	if showColors {
 		fmt.Printf("\n%s%s%s%s\n", ColorBold, ColorCyan, separator, ColorReset)
