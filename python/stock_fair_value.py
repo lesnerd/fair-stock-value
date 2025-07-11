@@ -8,24 +8,20 @@ This application calculates fair value prices for Fortune 500 stocks using a hyb
 - 40% Comparable Company Analysis (Comps)
 - Tangible book value as a conservative floor
 
-The app runs daily at 9:00 AM ET and provides terminal-based output showing
-each stock's ticker, fair value, current price, book value, and valuation status.
+The app provides terminal-based output showing each stock's ticker, fair value, current price, 
+book value, and valuation status.
 
 Requirements:
-- pip install yfinance schedule pytz tabulate
+- pip install yfinance tabulate
 
 Usage:
 - python stock_fair_value.py (runs once)
-- python stock_fair_value.py --schedule (runs daily at 9:00 AM ET)
+- python stock_fair_value.py --test (runs test with sample stocks)
 """
 
 import yfinance as yf
-import schedule
-import time
-import pytz
 from datetime import datetime
 from tabulate import tabulate
-import sys
 import argparse
 import warnings
 import ssl
@@ -33,7 +29,6 @@ import urllib3
 import csv
 import os
 import requests
-import json
 import statistics
 from typing import List, Optional
 import logging
@@ -97,7 +92,6 @@ os.environ['CURL_INSECURE'] = '1'
 
 # Configure curl_cffi for proper SSL certificate handling
 try:
-    import curl_cffi
     from curl_cffi import requests as cffi_requests
     
     # Patch curl_cffi to disable SSL verification
@@ -115,7 +109,7 @@ except ImportError:
 
 # Additional SSL context configuration for requests
 try:
-    import requests.packages.urllib3.util.ssl_
+    # import requests.packages.urllib3.util.ssl_
     # Only use unverified context as fallback
     pass
 except:
@@ -266,7 +260,7 @@ class StockValuator:
         """
         try:
             # Using demo API key - in production, get free API key from alphavantage.co
-            api_key = "demo"
+            api_key = "1ZPRSSFKTSK3VYMI"
             url = f"https://www.alphavantage.co/query?function=OVERVIEW&symbol={ticker}&apikey={api_key}"
             
             session = requests.Session()
@@ -981,12 +975,11 @@ class StockValuator:
         RESET = '\033[0m'   # Reset to default color
         BOLD = '\033[1m'    # Bold text
         
-        # Get current time in Eastern Time
-        et_tz = pytz.timezone('US/Eastern')
-        current_time = datetime.now(et_tz)
+        # Get current time for display
+        current_time = datetime.now()
         
         print("\n" + "="*80)
-        print(f"Stock Fair Value Analysis - {current_time.strftime('%Y-%m-%d %H:%M:%S ET')}")
+        print(f"Stock Fair Value Analysis - {current_time.strftime('%Y-%m-%d %H:%M:%S')}")
         print("="*80)
         
         # Sort results: Underpriced first (by highest upside), then Overpriced (by ticker)
@@ -1033,42 +1026,17 @@ class StockValuator:
         print(f"Overpriced: {overpriced_count}")
         print("="*80)
 
-def run_scheduled_analysis():
-    """
-    Run the stock valuation analysis (used for scheduling)
-    """
-    print(f"Running scheduled stock valuation at {datetime.now()}")
-    valuator = StockValuator()
-    valuator.run_valuation()
-
 def main():
     """
     Main function to handle command line arguments and execution
     """
     parser = argparse.ArgumentParser(description='Stock Fair Value Estimation')
-    parser.add_argument('--schedule', action='store_true', 
-                       help='Run scheduled analysis daily at 9:00 AM ET')
     parser.add_argument('--test', action='store_true',
                        help='Run test with sample stocks')
     
     args = parser.parse_args()
     
-    if args.schedule:
-        # Schedule daily run at 9:00 AM ET
-        et_tz = pytz.timezone('US/Eastern')
-        schedule.every().day.at("09:00").do(run_scheduled_analysis)
-        
-        print("Stock valuation scheduled to run daily at 9:00 AM ET")
-        print("Press Ctrl+C to stop")
-        
-        try:
-            while True:
-                schedule.run_pending()
-                time.sleep(60)  # Check every minute
-        except KeyboardInterrupt:
-            print("\nScheduled analysis stopped.")
-    
-    elif args.test:
+    if args.test:
         # Run test with limited stocks
         print("Running test analysis with sample stocks...")
         valuator = StockValuator()
