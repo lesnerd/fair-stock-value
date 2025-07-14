@@ -79,6 +79,9 @@ func sortResults(results []*models.ValuationResult, sortBy string) {
 			if results[i].Status == models.StatusUnderpriced && results[j].Status == models.StatusUnderpriced {
 				return results[i].PriceDifference > results[j].PriceDifference
 			}
+			if results[i].Status == models.StatusOverpriced && results[j].Status == models.StatusOverpriced {
+				return results[i].PriceDifference > results[j].PriceDifference
+			}
 			return results[i].Ticker < results[j].Ticker
 		})
 	case "ticker":
