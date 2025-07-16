@@ -28,6 +28,15 @@ type ValuationResult struct {
 	DCFValue           float64 `json:"dcf_value"`
 	CompsValue         float64 `json:"comps_value"`
 	UpsidePercentage   float64 `json:"upside_percentage"`
+	
+	// Additional optional fields
+	PERatio            float64 `json:"pe_ratio"`
+	EPS                float64 `json:"eps"`
+	FCFPerShare        float64 `json:"fcf_per_share"`
+	MarketCap          int64   `json:"market_cap"`
+	Sector             string  `json:"sector"`
+	GrowthRate         float64 `json:"growth_rate"`
+	CompanyName        string  `json:"company_name"`
 }
 
 // IndustryPERatio represents P/E ratios by industry

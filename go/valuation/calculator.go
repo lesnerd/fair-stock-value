@@ -64,6 +64,15 @@ func (c *Calculator) CalculateFairValue(stockData *models.StockData) *models.Val
 		DCFValue:         dcfValue,
 		CompsValue:       compsValue,
 		UpsidePercentage: upsidePercentage,
+		
+		// Additional optional fields
+		PERatio:          stockData.PERatio,
+		EPS:              stockData.EPS,
+		FCFPerShare:      stockData.FCFPerShare,
+		MarketCap:        stockData.MarketCap,
+		Sector:           stockData.Sector,
+		GrowthRate:       stockData.GrowthRate,
+		CompanyName:      stockData.CompanyName,
 	}
 }
 

@@ -26,6 +26,7 @@ func main() {
 		sortBy       = flag.String("sort", "upside", "Sort results by: upside, ticker, fair_value")
 		onlyUnderpriced = flag.Bool("underpriced", false, "Show only underpriced stocks")
 		maxResults   = flag.Int("limit", 0, "Maximum number of results to show (0 = no limit)")
+		showExtra    = flag.Bool("extra", false, "Show additional fields (P/E, EPS, Market Cap, Sector)")
 		help         = flag.Bool("help", false, "Show help message")
 	)
 	flag.Parse()
@@ -52,6 +53,7 @@ func main() {
 	cfg.Output.ShowProgress = *showProgress
 	cfg.Output.SortBy = *sortBy
 	cfg.Output.ShowOnlyUnderpriced = *onlyUnderpriced
+	cfg.Output.ShowExtra = *showExtra
 	if *maxResults > 0 {
 		cfg.Output.MaxResults = *maxResults
 	}
@@ -114,6 +116,7 @@ func (app *Application) Run() error {
 		app.config.Output.SortBy,
 		app.config.Output.ShowOnlyUnderpriced,
 		app.config.Output.MaxResults,
+		app.config.Output.ShowExtra,
 	)
 
 	return nil
@@ -265,11 +268,13 @@ func showHelp() {
 	fmt.Println("  -sort string       Sort results by: upside, ticker, fair_value (default \"upside\")")
 	fmt.Println("  -underpriced       Show only underpriced stocks")
 	fmt.Println("  -limit int         Maximum number of results to show (0 = no limit)")
+	fmt.Println("  -extra             Show additional fields (P/E, EPS, FCF/Share, Sector, Company)")
 	fmt.Println("  -help              Show this help message")
 	fmt.Println()
 	fmt.Println("Examples:")
 	fmt.Println("  fair-stock-value -test")
 	fmt.Println("  fair-stock-value -workers 4 -sort ticker")
 	fmt.Println("  fair-stock-value -underpriced -limit 20")
+	fmt.Println("  fair-stock-value -extra -limit 10")
 	fmt.Println()
 }

@@ -41,6 +41,7 @@ type OutputConfig struct {
 	SortBy            string `json:"sort_by"` // "upside", "ticker", "fair_value"
 	ShowOnlyUnderpriced bool `json:"show_only_underpriced"`
 	MaxResults        int  `json:"max_results"`
+	ShowExtra         bool `json:"show_extra"`
 }
 
 // NewDefaultConfig creates a new configuration with default values

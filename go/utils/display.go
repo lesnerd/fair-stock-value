@@ -24,7 +24,7 @@ const (
 )
 
 // DisplayResults displays the valuation results in a formatted table
-func DisplayResults(results []*models.ValuationResult, showColors bool, sortBy string, showOnlyUnderpriced bool, maxResults int) {
+func DisplayResults(results []*models.ValuationResult, showColors bool, sortBy string, showOnlyUnderpriced bool, maxResults int, showExtra bool) {
 	if len(results) == 0 {
 		fmt.Println("No results to display!")
 		return
@@ -48,7 +48,7 @@ func DisplayResults(results []*models.ValuationResult, showColors bool, sortBy s
 	displayHeader(showColors)
 
 	// Display table
-	displayTable(filteredResults, showColors)
+	displayTable(filteredResults, showColors, showExtra)
 
 	// Display summary
 	displaySummary(results, showColors)
@@ -117,27 +117,41 @@ func displayHeader(showColors bool) {
 }
 
 // displayTable displays the results in a formatted table
-func displayTable(results []*models.ValuationResult, showColors bool) {
+func displayTable(results []*models.ValuationResult, showColors bool, showExtra bool) {
 	// Table header
-	if showColors {
-		fmt.Printf("%s%-8s %-12s %-12s %-12s %-10s %-12s %-12s%s\n", 
-			ColorBold, "Ticker", "Fair Value", "Current Price", "Difference", "Percentage", "Book Value", "Status", ColorReset)
+	if showExtra {
+		if showColors {
+			fmt.Printf("%s%-8s %-12s %-12s %-12s %-8s %-12s %-12s %-6s %-8s %-12s %-20s %-12s%s\n", 
+				ColorBold, "Ticker", "Fair Value", "Current Price", "Difference", "Pct", "Book Value", "Status", "P/E", "EPS", "FCF/Share", "Sector", "Company", ColorReset)
+		} else {
+			fmt.Printf("%-8s %-12s %-12s %-12s %-8s %-12s %-12s %-6s %-8s %-12s %-20s %-12s\n", 
+				"Ticker", "Fair Value", "Current Price", "Difference", "Pct", "Book Value", "Status", "P/E", "EPS", "FCF/Share", "Sector", "Company")
+		}
 	} else {
-		fmt.Printf("%-8s %-12s %-12s %-12s %-10s %-12s %-12s\n", 
-			"Ticker", "Fair Value", "Current Price", "Difference", "Percentage", "Book Value", "Status")
+		if showColors {
+			fmt.Printf("%s%-8s %-12s %-12s %-12s %-8s %-12s %-12s%s\n", 
+				ColorBold, "Ticker", "Fair Value", "Current Price", "Difference", "Pct", "Book Value", "Status", ColorReset)
+		} else {
+			fmt.Printf("%-8s %-12s %-12s %-12s %-8s %-12s %-12s\n", 
+				"Ticker", "Fair Value", "Current Price", "Difference", "Pct", "Book Value", "Status")
+		}
 	}
 	
 	// Separator line
-	fmt.Println(strings.Repeat("-", 90))
+	separatorLength := 90
+	if showExtra {
+		separatorLength = 160
+	}
+	fmt.Println(strings.Repeat("-", separatorLength))
 	
 	// Table rows
 	for _, result := range results {
-		displayRow(result, showColors)
+		displayRow(result, showColors, showExtra)
 	}
 }
 
 // displayRow displays a single result row
-func displayRow(result *models.ValuationResult, showColors bool) {
+func displayRow(result *models.ValuationResult, showColors bool, showExtra bool) {
 	var color string
 	if showColors {
 		if result.Status == models.StatusUnderpriced {
@@ -147,16 +161,63 @@ func displayRow(result *models.ValuationResult, showColors bool) {
 		}
 	}
 	
-	fmt.Printf("%s%-8s $%-11.2f $%-11.2f $%-11.2f %-9.1f%% $%-11.2f %-12s%s\n",
-		color,
-		result.Ticker,
-		result.FairValue,
-		result.CurrentPrice,
-		result.PriceDifference,
-		result.UpsidePercentage,
-		result.BookValue,
-		result.Status,
-		ColorReset)
+	if showExtra {
+		// Truncate company name if too long
+		companyName := result.CompanyName
+		if len(companyName) > 20 {
+			companyName = companyName[:17] + "..."
+		}
+		
+		// Truncate sector if too long
+		sector := result.Sector
+		if len(sector) > 18 {
+			sector = sector[:15] + "..."
+		}
+		
+		fmt.Printf("%s%-8s $%-11.2f $%-11.2f $%-11.2f %6.1f%% $%-11.2f %-12s %5.1f $%-7.2f $%-11.2f %-20s %-12s%s\n",
+			color,
+			result.Ticker,
+			result.FairValue,
+			result.CurrentPrice,
+			result.PriceDifference,
+			result.UpsidePercentage,
+			result.BookValue,
+			result.Status,
+			result.PERatio,
+			result.EPS,
+			result.FCFPerShare,
+			sector,
+			companyName,
+			ColorReset)
+	} else {
+		fmt.Printf("%s%-8s $%-11.2f $%-11.2f $%-11.2f %6.1f%% $%-11.2f %-12s%s\n",
+			color,
+			result.Ticker,
+			result.FairValue,
+			result.CurrentPrice,
+			result.PriceDifference,
+			result.UpsidePercentage,
+			result.BookValue,
+			result.Status,
+			ColorReset)
+	}
+}
+
+// formatMarketCap formats market cap in human-readable format
+func formatMarketCap(marketCap int64) string {
+	if marketCap == 0 {
+		return "N/A"
+	}
+	
+	if marketCap >= 1000000000000 {
+		return fmt.Sprintf("%.1fT", float64(marketCap)/1000000000000)
+	} else if marketCap >= 1000000000 {
+		return fmt.Sprintf("%.1fB", float64(marketCap)/1000000000)
+	} else if marketCap >= 1000000 {
+		return fmt.Sprintf("%.1fM", float64(marketCap)/1000000)
+	} else {
+		return fmt.Sprintf("%.1fK", float64(marketCap)/1000)
+	}
 }
 
 // displaySummary displays summary statistics
