@@ -128,6 +128,20 @@ func (df *DataFetcher) FetchStockData(ctx context.Context, ticker string) (*mode
 		stockData.PERatio = peRatio
 	}
 
+	// Fetch growth rate from multiple sources using crowd wisdom
+	// Always fetch consensus growth rate to override fallback data
+	fmt.Printf("Fetching consensus growth rate for %s...\n", ticker)
+	growthFetcher := NewGrowthRateFetcher()
+	if consensusGrowth, err := growthFetcher.FetchGrowthRateConsensus(ctx, ticker); err == nil {
+		stockData.GrowthRate = consensusGrowth
+	} else {
+		fmt.Printf("Failed to fetch consensus growth rate for %s: %v, using fallback or default\n", ticker, err)
+		// Keep existing growth rate if we have one, otherwise use default
+		if stockData.GrowthRate == 0 {
+			stockData.GrowthRate = 0.06 // Default 6% growth
+		}
+	}
+
 	return stockData, nil
 }
 
@@ -207,10 +221,6 @@ func (df *DataFetcher) fetchFromYahooFinance(ctx context.Context, ticker string,
 		return fmt.Errorf("no valid price data found for %s", ticker)
 	}
 	
-	// Set default growth rate
-	if stockData.GrowthRate == 0 {
-		stockData.GrowthRate = 0.06 // Default 6% growth
-	}
 	
 	return nil
 }

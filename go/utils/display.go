@@ -102,7 +102,7 @@ func sortResults(results []*models.ValuationResult, sortBy string) {
 func displayHeader(showColors bool) {
 	currentTime := time.Now()
 	
-	separator := strings.Repeat("=", 90)
+	separator := strings.Repeat("=", 98)
 	title := fmt.Sprintf("Stock Fair Value Analysis - %s", currentTime.Format("2006-01-02 15:04:05"))
 	
 	if showColors {
@@ -121,26 +121,26 @@ func displayTable(results []*models.ValuationResult, showColors bool, showExtra 
 	// Table header
 	if showExtra {
 		if showColors {
-			fmt.Printf("%s%-8s %-12s %-12s %-12s %-8s %-12s %-12s %-6s %-8s %-12s %-20s %-12s%s\n", 
-				ColorBold, "Ticker", "Fair Value", "Current Price", "Difference", "Pct", "Book Value", "Status", "P/E", "EPS", "FCF/Share", "Sector", "Company", ColorReset)
+			fmt.Printf("%s%-8s %-12s %-12s %-12s %-8s %-12s %-12s %-8s %-6s %-8s %-12s %-20s %-12s%s\n", 
+				ColorBold, "Ticker", "Fair Value", "Current Price", "Difference", "Pct", "Book Value", "Status", "Growth", "P/E", "EPS", "FCF/Share", "Sector", "Company", ColorReset)
 		} else {
-			fmt.Printf("%-8s %-12s %-12s %-12s %-8s %-12s %-12s %-6s %-8s %-12s %-20s %-12s\n", 
-				"Ticker", "Fair Value", "Current Price", "Difference", "Pct", "Book Value", "Status", "P/E", "EPS", "FCF/Share", "Sector", "Company")
+			fmt.Printf("%-8s %-12s %-12s %-12s %-8s %-12s %-12s %-8s %-6s %-8s %-12s %-20s %-12s\n", 
+				"Ticker", "Fair Value", "Current Price", "Difference", "Pct", "Book Value", "Status", "Growth", "P/E", "EPS", "FCF/Share", "Sector", "Company")
 		}
 	} else {
 		if showColors {
-			fmt.Printf("%s%-8s %-12s %-12s %-12s %-8s %-12s %-12s%s\n", 
-				ColorBold, "Ticker", "Fair Value", "Current Price", "Difference", "Pct", "Book Value", "Status", ColorReset)
+			fmt.Printf("%s%-8s %-12s %-12s %-12s %-8s %-12s %-12s %-8s%s\n", 
+				ColorBold, "Ticker", "Fair Value", "Current Price", "Difference", "Pct", "Book Value", "Status", "Growth", ColorReset)
 		} else {
-			fmt.Printf("%-8s %-12s %-12s %-12s %-8s %-12s %-12s\n", 
-				"Ticker", "Fair Value", "Current Price", "Difference", "Pct", "Book Value", "Status")
+			fmt.Printf("%-8s %-12s %-12s %-12s %-8s %-12s %-12s %-8s\n", 
+				"Ticker", "Fair Value", "Current Price", "Difference", "Pct", "Book Value", "Status", "Growth")
 		}
 	}
 	
 	// Separator line
-	separatorLength := 90
+	separatorLength := 98
 	if showExtra {
-		separatorLength = 160
+		separatorLength = 168
 	}
 	fmt.Println(strings.Repeat("-", separatorLength))
 	
@@ -174,7 +174,7 @@ func displayRow(result *models.ValuationResult, showColors bool, showExtra bool)
 			sector = sector[:15] + "..."
 		}
 		
-		fmt.Printf("%s%-8s $%-11.2f $%-11.2f $%-11.2f %6.1f%% $%-11.2f %-12s %5.1f $%-7.2f $%-11.2f %-20s %-12s%s\n",
+		fmt.Printf("%s%-8s $%-11.2f $%-11.2f $%-11.2f %6.1f%% $%-11.2f %-12s %5.1f%% %5.1f $%-7.2f $%-11.2f %-20s %-12s%s\n",
 			color,
 			result.Ticker,
 			result.FairValue,
@@ -183,6 +183,7 @@ func displayRow(result *models.ValuationResult, showColors bool, showExtra bool)
 			result.UpsidePercentage,
 			result.BookValue,
 			result.Status,
+			result.GrowthRate*100,
 			result.PERatio,
 			result.EPS,
 			result.FCFPerShare,
@@ -190,7 +191,7 @@ func displayRow(result *models.ValuationResult, showColors bool, showExtra bool)
 			companyName,
 			ColorReset)
 	} else {
-		fmt.Printf("%s%-8s $%-11.2f $%-11.2f $%-11.2f %6.1f%% $%-11.2f %-12s%s\n",
+		fmt.Printf("%s%-8s $%-11.2f $%-11.2f $%-11.2f %6.1f%% $%-11.2f %-12s %5.1f%%%s\n",
 			color,
 			result.Ticker,
 			result.FairValue,
@@ -199,6 +200,7 @@ func displayRow(result *models.ValuationResult, showColors bool, showExtra bool)
 			result.UpsidePercentage,
 			result.BookValue,
 			result.Status,
+			result.GrowthRate*100,
 			ColorReset)
 	}
 }
@@ -240,7 +242,7 @@ func displaySummary(results []*models.ValuationResult, showColors bool) {
 		avgUpside = totalUpside / float64(underpriced)
 	}
 	
-	separator := strings.Repeat("=", 90)
+	separator := strings.Repeat("=", 98)
 	
 	if showColors {
 		fmt.Printf("\n%s%s%s%s\n", ColorBold, ColorCyan, separator, ColorReset)
